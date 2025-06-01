@@ -8,6 +8,8 @@ export const authRouter = Router();
 
 authRouter.post("/signin", async (req, res) =>{
 
+    try{
+
     const pubAddress = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZ";
 
     const existingUser = await prisma.user.findFirst({
@@ -25,6 +27,8 @@ authRouter.post("/signin", async (req, res) =>{
             token
         })
         
+        return;
+        
     } else {
         const user = await prisma.user.create({
             data: {
@@ -39,13 +43,16 @@ authRouter.post("/signin", async (req, res) =>{
         res.json({
             token: token
         })
+        
+        return;
+        
     }
 
+    }catch(e) {
+        res.status(500).json({
+            error: "Something went wrong"
+        })
+    }
 
-
-
-    res.status(200).json({
-        message: "successfully signin"
-    })
 })
 
