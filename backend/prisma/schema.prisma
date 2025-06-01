@@ -15,39 +15,48 @@ datasource db {
 }
 
 model User {
-  id        Int    @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   address   String    @unique
   task      Task[]
 }
 
 model Task {
-  id        Int     @id @default(autoincrement())
-  title     String   @default("Choose the most voted one")
-  options   Option[]
-  userId    Int
-  user      User      @relation(fields: [userId], references: [id])
+  id          Int       @id @default(autoincrement())
+  title       String    @default("Choose the most voted one")
+  options     Option[]
+  signature   String
+  amount      String
+  userId      Int
+  user          User      @relation(fields: [userId], references: [id])
+  submission    Submission[]
 }
 
 model Option {
-  id            Int   @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   image_url     String
   optionId      Int
   taskId        Int  
-  task          Task    @relation(fields:[taskId], references: [id])
+  task          Task        @relation(fields:[taskId], references: [id])
   submission    Submission[]
 }
 
 model Worker {
-  id        Int    @id @default(autoincrement())
-  address   String    @unique 
-  submission    Submission[]
+  id              Int       @id @default(autoincrement())
+  address         String    @unique 
+  submission      Submission[]
+  balanceId       Int
+  pendingAmount   Int
+  lockedAmount    Int
 }
 
 
 model Submission {
-  id        Int    @id   @default(autoincrement())
+  id        Int     @id   @default(autoincrement())
   workerId  Int
   worker    Worker  @relation(fields: [workerId], references: [id])
   optionId  Int
   option    Option  @relation(fields: [optionId], references: [id])
+  taskId    Int
+  task      Task    @relation(fields: [taskId], references: [id])
+  amount    String
 }
