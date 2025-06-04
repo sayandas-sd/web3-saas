@@ -1,1 +1,0 @@
-{"root":["./src/config.ts","./src/db.ts","./src/index.ts","./src/routes/v1/index.ts","./src/routes/v1/router/user.ts","./src/routes/v1/router/worker.ts"],"version":"5.8.3"}
