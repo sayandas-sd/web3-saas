@@ -65,7 +65,7 @@ authRouter.get("/task", authmiddleWare, async (req,res) => {
     //@ts-ignore
     const user_Id = req.userId;
 
-
+    
     const allTask = await prisma.task.findFirst({
         where: {
             userId: Number(user_Id),

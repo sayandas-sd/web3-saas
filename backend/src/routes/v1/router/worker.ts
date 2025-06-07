@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../../../db";
 import jwt from "jsonwebtoken";
 import { WORKER_JWT_SECRET } from "../../../config";
+import { workerAuthmiddleWare } from "../../../middleware";
 
 export const workerRouter = Router();
 
@@ -51,4 +52,39 @@ workerRouter.post("/signin", async(req, res)=>{
         })
     }
     
+})
+
+
+workerRouter.get("/task", workerAuthmiddleWare ,async(req,res) => {
+
+    //@ts-ignore
+    const user_Id = req.userId;
+
+
+    const alltask = await prisma.task.findFirst({
+        where: {
+            successful: false,
+            submission: {
+                none: {
+                    workerId: user_Id,
+                }
+            }
+        },
+        select: {
+            title: true,
+            options: true
+        }
+    })
+
+    if(!alltask) {
+        res.status(411).json({
+            message: "There are no more task left"
+        })
+        return;
+    } else {
+        res.status(200).json({
+            alltask
+        })
+        return;
+    }
 })
