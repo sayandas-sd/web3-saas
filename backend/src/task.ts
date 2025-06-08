@@ -1,4 +1,4 @@
-import { prisma } from "./db"
+import { prisma } from "./db/db"
 
 
 export const getTask = async (userId: number) => {

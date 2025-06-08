@@ -17,16 +17,17 @@ model User {
   id        Int       @id @default(autoincrement())
   address   String    @unique
   task      Task[]
+  pay       Pay[]
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String    @default("Choose the most voted one")
-  options     Option[]
-  signature   String
-  amount      Int
-  successful  Boolean  @default(false)
-  userId      Int
+  id            Int       @id @default(autoincrement())
+  title         String    @default("Choose the most voted one")
+  options        Option[]
+  signature     String
+  amount        Int
+  successful    Boolean  @default(false)
+  userId        Int
   user          User      @relation(fields: [userId], references: [id])
   submission    Submission[]
 }
@@ -56,6 +57,21 @@ model Submission {
   option    Option  @relation(fields: [optionId], references: [id])
   taskId    Int
   task      Task    @relation(fields: [taskId], references: [id])
-  amount    String
+  amount    Int
   @@unique([workerId, taskId])
+}
+
+model Pay {
+  id          Int     @id @default(autoincrement())
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id])
+  amount      Int
+  signature   String
+  status      PaymentStatus
+}
+
+enum PaymentStatus {
+  Successful
+  Pending
+  Processing
 }

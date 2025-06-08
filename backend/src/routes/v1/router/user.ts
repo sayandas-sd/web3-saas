@@ -1,9 +1,10 @@
 import {Router} from "express";
 import jwt from "jsonwebtoken";
-import { prisma } from "../../../db";
-import { JWT_SECRET, TOTAL_LAMPORTS_AMOUNT } from "../../../config";
-import { authmiddleWare } from "../../../middleware";
-import { taskInput } from "../../../types";
+import { prisma } from "../../../db/db";
+import { JWT_SECRET, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
+
+import { taskInput } from "../../../types/types";
+import { authmiddleWare } from "../../../middleware/authMiddleware";
 
 export const authRouter = Router();
 
@@ -67,6 +68,17 @@ authRouter.get("/task", authmiddleWare, async (req,res) => {
     //@ts-ignore
     const user_Id = req.userId;
 
+
+    if (!task_Id) {
+        res.status(400).json({ message: "Missing taskId in query" });
+        return;
+    }
+
+
+    console.log({
+        userId: user_Id,
+        taskId: task_Id
+    })
 
     const allTask = await prisma.task.findFirst({
         where: {

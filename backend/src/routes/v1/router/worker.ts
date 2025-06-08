@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { prisma } from "../../../db";
+import { prisma } from "../../../db/db";
 import jwt from "jsonwebtoken";
-import { TOTAL_LAMPORTS_AMOUNT, WORKER_JWT_SECRET } from "../../../config";
-import { workerAuthmiddleWare } from "../../../middleware";
+import { TOTAL_LAMPORTS_AMOUNT, WORKER_JWT_SECRET } from "../../../config/config";
+
 import { getTask } from "../../../task";
-import { submissionInput } from "../../../types";
+import { submissionInput } from "../../../types/types";
+import { workermiddleWare } from "../../../middleware/workerMiddleware";
+
+
 
 export const workerRouter = Router();
 
@@ -59,7 +62,7 @@ workerRouter.post("/signin", async(req, res)=>{
 })
 
 
-workerRouter.get("/task", workerAuthmiddleWare , async(req,res) => {
+workerRouter.get("/task", workermiddleWare , async(req,res) => {
 
     //@ts-ignore
     const user_Id: string = req.userId;
@@ -83,7 +86,8 @@ workerRouter.get("/task", workerAuthmiddleWare , async(req,res) => {
 })
 
 
-workerRouter.post("/submission", workerAuthmiddleWare, async(req, res) =>{
+workerRouter.post("/submission", workermiddleWare, async(req, res) => {
+
     const body = req.body;
     //@ts-ignore
     const userId = req.userId;
@@ -94,7 +98,7 @@ workerRouter.post("/submission", workerAuthmiddleWare, async(req, res) =>{
     try {
             if(parseData.success) {
 
-                const task = await getTask(userId);
+                const task = await getTask(Number(userId));
 
                 if(!task || task?.id !== Number(parseData.data.taskId)) {
                         res.status(411).json({
@@ -109,7 +113,7 @@ workerRouter.post("/submission", workerAuthmiddleWare, async(req, res) =>{
 
                 const submission = await prisma.$transaction(async (tx) => {
 
-                    const submission = await prisma.submission.create({
+                    const submission = await tx.submission.create({
                         data: {
                             optionId: Number(parseData.data.selectId),
                             taskId: Number(parseData.data.taskId),
@@ -145,8 +149,6 @@ workerRouter.post("/submission", workerAuthmiddleWare, async(req, res) =>{
 
 
                 
-            } else {
-
             }
 
     } catch(e) {
@@ -156,3 +158,23 @@ workerRouter.post("/submission", workerAuthmiddleWare, async(req, res) =>{
     }
     
 })
+
+workerRouter.get("/balance", workermiddleWare, async(req, res) => {
+
+    //@ts-ignore
+    const userId = req.userId;
+
+
+    const balance = await prisma.worker.findFirst({
+        where: {
+            id: Number(userId),
+        }
+    })
+
+    res.json({
+        pendingAmount: balance?.pendingAmount,
+        lockedAmount: balance?.lockedAmount
+    })
+})
+
+
