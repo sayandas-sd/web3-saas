@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../../../db";
 import { JWT_SECRET } from "../../../config";
 import { authmiddleWare } from "../../../middleware";
+import { taskInput } from "../../../types";
 
 export const authRouter = Router();
 
@@ -65,7 +66,7 @@ authRouter.get("/task", authmiddleWare, async (req,res) => {
     //@ts-ignore
     const user_Id = req.userId;
 
-    
+
     const allTask = await prisma.task.findFirst({
         where: {
             userId: Number(user_Id),

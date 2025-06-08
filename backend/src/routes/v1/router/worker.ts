@@ -3,14 +3,18 @@ import { prisma } from "../../../db";
 import jwt from "jsonwebtoken";
 import { WORKER_JWT_SECRET } from "../../../config";
 import { workerAuthmiddleWare } from "../../../middleware";
+import { getTask } from "../../../task";
+import { submissionInput } from "../../../types";
 
 export const workerRouter = Router();
 
+const SUBMISSION = 100;
+const TOTAL_LAMPORTS_AMOUNT = 1000_000_000;
 
 workerRouter.post("/signin", async(req, res)=>{
     
     try {
-         const pubKey = "nknkasa";
+         const pubKey = "nknka";
 
         const existingUser = await prisma.worker.findFirst({
             where: {
@@ -55,36 +59,101 @@ workerRouter.post("/signin", async(req, res)=>{
 })
 
 
-workerRouter.get("/task", workerAuthmiddleWare ,async(req,res) => {
+workerRouter.get("/task", workerAuthmiddleWare , async(req,res) => {
 
     //@ts-ignore
-    const user_Id = req.userId;
+    const user_Id: string = req.userId;
 
+    const allTask = await getTask(Number(user_Id));
 
-    const alltask = await prisma.task.findFirst({
-        where: {
-            successful: false,
-            submission: {
-                none: {
-                    workerId: user_Id,
-                }
-            }
-        },
-        select: {
-            title: true,
-            options: true
-        }
-    })
-
-    if(!alltask) {
+    if(!allTask) {
         res.status(411).json({
             message: "There are no more task left"
         })
         return;
+
     } else {
+
         res.status(200).json({
-            alltask
+            allTask
         })
+
         return;
     }
+})
+
+
+workerRouter.post("/submission", workerAuthmiddleWare, async(req, res) =>{
+    const body = req.body;
+    //@ts-ignore
+    const userId = req.userId;
+
+    const parseData = submissionInput.safeParse(body);
+
+    
+    try {
+            if(parseData.success) {
+
+                const task = await getTask(userId);
+
+                if(!task || task?.id !== Number(parseData.data.taskId)) {
+                        res.status(411).json({
+                            message: "Incorrect Task Id"
+                        })
+                        return;
+                }
+
+                const amount =  (Number(task.amount) / SUBMISSION).toString();
+
+              
+
+                await prisma.$transaction(async (tx) => {
+
+                    const submission = await prisma.submission.create({
+                        data: {
+                            optionId: Number(parseData.data.selectId),
+                            taskId: Number(parseData.data.taskId),
+                            workerId: userId ,
+                            amount
+                        }
+
+                    })
+
+                   const news = await tx.worker.update({
+                       where: {
+                            id: userId
+                       },
+                       data: {
+                            pendingAmount: {
+                                increment: Number(amount)
+                            }
+                       }
+                    })
+
+
+                    return submission;
+                })
+
+                
+
+                const nextTask = await getTask(userId);
+
+                res.status(200).json({
+                    message: "successfully created",
+                    nextTask,
+                    amount
+                })
+
+
+                
+            } else {
+
+            }
+
+    } catch(e) {
+        res.status(500).json({
+            error: "server error"
+        })
+    }
+    
 })
