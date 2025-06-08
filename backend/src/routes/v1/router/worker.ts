@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../../../db";
 import jwt from "jsonwebtoken";
-import { WORKER_JWT_SECRET } from "../../../config";
+import { TOTAL_LAMPORTS_AMOUNT, WORKER_JWT_SECRET } from "../../../config";
 import { workerAuthmiddleWare } from "../../../middleware";
 import { getTask } from "../../../task";
 import { submissionInput } from "../../../types";
@@ -9,7 +9,7 @@ import { submissionInput } from "../../../types";
 export const workerRouter = Router();
 
 const SUBMISSION = 100;
-const TOTAL_LAMPORTS_AMOUNT = 1000_000_000;
+
 
 workerRouter.post("/signin", async(req, res)=>{
     
@@ -107,7 +107,7 @@ workerRouter.post("/submission", workerAuthmiddleWare, async(req, res) =>{
 
               
 
-                await prisma.$transaction(async (tx) => {
+                const submission = await prisma.$transaction(async (tx) => {
 
                     const submission = await prisma.submission.create({
                         data: {
@@ -119,17 +119,16 @@ workerRouter.post("/submission", workerAuthmiddleWare, async(req, res) =>{
 
                     })
 
-                   const news = await tx.worker.update({
+                   await tx.worker.update({
                        where: {
                             id: userId
                        },
                        data: {
                             pendingAmount: {
-                                increment: Number(amount)
+                                increment: Number(amount) * TOTAL_LAMPORTS_AMOUNT
                             }
                        }
                     })
-
 
                     return submission;
                 })

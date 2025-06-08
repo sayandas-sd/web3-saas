@@ -1,12 +1,13 @@
 import {Router} from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../../db";
-import { JWT_SECRET } from "../../../config";
+import { JWT_SECRET, TOTAL_LAMPORTS_AMOUNT } from "../../../config";
 import { authmiddleWare } from "../../../middleware";
 import { taskInput } from "../../../types";
 
 export const authRouter = Router();
 
+const DEFAULT_TITLE = "Choose the most voted one";
 
 
 authRouter.post("/signin", async (req, res) =>{
@@ -120,4 +121,49 @@ authRouter.get("/task", authmiddleWare, async (req,res) => {
     res.json({
         values
     })
+})
+
+
+authRouter.post("/task", authmiddleWare, async (req, res) =>{
+
+    //@ts-ignore
+    const userId = req.userId;
+
+    const body = req.body;
+
+    const parseData = taskInput.safeParse(body);
+
+    if(!parseData.success) {
+        res.status(411).json({
+            message: "you've sent the wrong inputs"
+        })
+        return;
+    }
+
+    let response = await prisma.$transaction(async (tx) => {
+
+        const response = await tx.task.create({
+            data: {
+                title:  parseData.data.title ?? DEFAULT_TITLE,
+                signature: parseData.data.signature,
+                amount: 1 * TOTAL_LAMPORTS_AMOUNT,
+                userId: userId
+            }
+        })
+
+        await tx.option.createMany({
+            data: parseData.data.options.map(x => ({
+                image_url: x.image_url,
+                taskId: response.id
+            }))
+        })  
+
+        return response;
+
+    })
+
+    res.status(200).json({
+        id: response.id
+    })
+    
 })

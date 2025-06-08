@@ -24,7 +24,7 @@ model Task {
   title       String    @default("Choose the most voted one")
   options     Option[]
   signature   String
-  amount      String
+  amount      Int
   successful  Boolean  @default(false)
   userId      Int
   user          User      @relation(fields: [userId], references: [id])
@@ -34,7 +34,6 @@ model Task {
 model Option {
   id            Int      @id @default(autoincrement())
   image_url     String
-  optionId      Int
   taskId        Int  
   task          Task        @relation(fields:[taskId], references: [id])
   submission    Submission[]

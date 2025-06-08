@@ -36,15 +36,15 @@ async function main() {
         data: {
             title: "which is most voted one",
             signature: "sasasas",
-            amount: "10",
+            amount: 10,
             userId: user1.id,
             options: {
                 create: [
                     {
-                        image_url: "asas", optionId: 0
+                        image_url: "asas",
                     },
                     {
-                        image_url: "s", optionId: 1
+                        image_url: "s",
                     }
                 ]
             },
@@ -58,17 +58,15 @@ async function main() {
         data: {
             title: 'whics is dog',
             signature: 'newew',
-            amount: '20',
+            amount: 20,
             userId: user2.id,
             options: {
                 create: [
                     { 
                         image_url: 'https://new.com', 
-                        optionId: 0 
                     },
                     { 
                         image_url: 'https://lol.com', 
-                        optionId: 1 
                     },
                 ],
             },
@@ -86,7 +84,7 @@ async function main() {
     await prisma.submission.create({
     data: {
       workerId: worker1.id,
-      optionId: task1.options[0].id,
+      optionId: task1.id,
       taskId: task1.id,
       amount: amountTask1,
     },
@@ -106,7 +104,7 @@ async function main() {
     await prisma.submission.create({
         data: {
         workerId: worker2.id,
-        optionId: task2.options[1].id,
+        optionId: task2.id,
         taskId: task2.id,
         amount: amountTask2,
         },

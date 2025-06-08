@@ -10,5 +10,6 @@ export const taskInput = z.object({
     options: z.array(z.object({
         image_url: z.string()
     })),
-    title: z.string().min(10).optional()
+    title: z.string().min(10).optional(),
+    signature: z.string()
 })
