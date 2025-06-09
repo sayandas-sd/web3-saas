@@ -107,7 +107,7 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
                         return;
                 }
 
-                const amount =  (Number(task.amount) / SUBMISSION).toString();
+                const amount =  (Number(task.amount) / SUBMISSION);
 
               
 
@@ -118,7 +118,7 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
                             optionId: Number(parseData.data.selectId),
                             taskId: Number(parseData.data.taskId),
                             workerId: userId ,
-                            amount
+                            amount: Number(amount)
                         }
 
                     })
@@ -177,4 +177,56 @@ workerRouter.get("/balance", workermiddleWare, async(req, res) => {
     })
 })
 
+workerRouter.post("/pay", workermiddleWare, async (req, res) => {
 
+    //@ts-ignore
+    const userId = req.userId;
+
+    const workerPay = await prisma.worker.findFirst({
+        where: {
+            id: Number(userId)
+        }
+    })
+
+    if(!workerPay) {
+        res.status(403).json({
+            message: "user not found"
+        })
+        return;
+    }
+
+    const address = workerPay.address;
+
+
+    const signature = "ox9000";
+
+
+    await prisma.$transaction(async (tx) => {
+
+        await tx.worker.update({
+            where: {
+                id: userId
+            },
+            data: {
+                pendingAmount: {
+                    decrement: workerPay.pendingAmount
+                }, 
+                lockedAmount: {
+                    increment: workerPay.pendingAmount
+                }
+            }
+        })
+
+
+        const payout = await tx.pay.create({
+            data: {
+                userId: Number(userId),
+                signature,
+                status: "Processing",
+                amount: workerPay.pendingAmount
+            }
+        })
+
+    })
+
+})

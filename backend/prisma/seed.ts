@@ -78,16 +78,16 @@ async function main() {
 
     const SUBMISSION = 100;
 
-    const amountTask1 = (Number(task1.amount) / SUBMISSION).toString();
-    const amountTask2 = (Number(task2.amount) / SUBMISSION).toString();
+    const amountTask1 = (Number(task1.amount) / SUBMISSION);
+    const amountTask2 = (Number(task2.amount) / SUBMISSION);
 
     await prisma.submission.create({
-    data: {
-      workerId: worker1.id,
-      optionId: task1.id,
-      taskId: task1.id,
-      amount: amountTask1,
-    },
+        data: {
+            workerId: worker1.id,
+            optionId: task1.id,
+            taskId: task1.id,
+            amount: amountTask1,
+        },
   });
 
     await prisma.worker.update({
@@ -103,10 +103,10 @@ async function main() {
 
     await prisma.submission.create({
         data: {
-        workerId: worker2.id,
-        optionId: task2.id,
-        taskId: task2.id,
-        amount: amountTask2,
+            workerId: worker2.id,
+            optionId: task2.id,
+            taskId: task2.id,
+            amount: amountTask2,
         },
     });
 

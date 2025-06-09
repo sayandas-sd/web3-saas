@@ -14,7 +14,6 @@ const DEFAULT_TITLE = "Choose the most voted one";
 authRouter.post("/signin", async (req, res) =>{
 
     try{
-
         const pubAddress = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzc";
 
         const existingUser = await prisma.user.findFirst({
