@@ -229,4 +229,9 @@ workerRouter.post("/pay", workermiddleWare, async (req, res) => {
 
     })
 
+    res.json({
+        message: "Successful",
+        amount: workerPay.pendingAmount
+    })
+
 })
