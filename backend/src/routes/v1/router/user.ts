@@ -5,11 +5,41 @@ import { JWT_SECRET, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
 
 import { taskInput } from "../../../types/types";
 import { authmiddleWare } from "../../../middleware/authMiddleware";
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 export const authRouter = Router();
 
 const DEFAULT_TITLE = "Choose the most voted one";
 
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: process.env.CLOUDFLARE_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY || '',
+    secretAccessKey: process.env.S3_SECRET_KEY || '',
+  },
+});
+
+authRouter.post("/presignedurl", authmiddleWare, async (req,res) =>{
+
+    //@ts-ignore
+    const userId = req.userId;
+
+    const command = new PutObjectCommand({
+        Bucket: "web3-saas",
+        Key: `/secret/${userId}/${Math.random()}/image.jpg`,
+        ContentType: "img/jpg"
+    })
+
+    const preSignedUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: 3600
+    })
+
+    res.json({
+        url: preSignedUrl
+    })
+})
 
 authRouter.post("/signin", async (req, res) =>{
 
@@ -178,3 +208,5 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
     })
     
 })
+
+

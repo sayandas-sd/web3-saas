@@ -171,7 +171,7 @@ workerRouter.get("/balance", workermiddleWare, async(req, res) => {
         }
     })
 
-    res.json({
+    res.status(200).json({
         pendingAmount: balance?.pendingAmount,
         lockedAmount: balance?.lockedAmount
     })
@@ -229,7 +229,7 @@ workerRouter.post("/pay", workermiddleWare, async (req, res) => {
 
     })
 
-    res.json({
+    res.status(200).json({
         message: "Successful",
         amount: workerPay.pendingAmount
     })
