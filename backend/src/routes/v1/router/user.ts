@@ -1,7 +1,7 @@
 import {Router} from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../../db/db";
-import { JWT_SECRET, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
+import { CLOUDFLARE_ENDPOINT, JWT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
 
 import { taskInput } from "../../../types/types";
 import { authmiddleWare } from "../../../middleware/authMiddleware";
@@ -14,10 +14,10 @@ const DEFAULT_TITLE = "Choose the most voted one";
 
 const s3Client = new S3Client({
   region: 'auto',
-  endpoint: process.env.CLOUDFLARE_ENDPOINT,
+  endpoint: CLOUDFLARE_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY || '',
-    secretAccessKey: process.env.S3_SECRET_KEY || '',
+    accessKeyId: S3_ACCESS_KEY,
+    secretAccessKey: S3_SECRET_KEY,
   },
 });
 
