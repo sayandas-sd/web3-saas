@@ -21,7 +21,7 @@ const s3Client = new S3Client({
   },
 });
 
-authRouter.post("/presignedurl", authmiddleWare, async (req,res) =>{
+authRouter.get("/presignedurl", authmiddleWare, async (req,res) =>{
 
     //@ts-ignore
     const userId = req.userId;
@@ -29,7 +29,7 @@ authRouter.post("/presignedurl", authmiddleWare, async (req,res) =>{
     const command = new PutObjectCommand({
         Bucket: "web3-saas",
         Key: `/secret/${userId}/${Math.random()}/image.jpg`,
-        ContentType: "img/jpg"
+        ContentType: "image/jpg"
     })
 
     const preSignedUrl = await getSignedUrl(s3Client, command, {
