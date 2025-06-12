@@ -5,8 +5,9 @@ import { CLOUDFLARE_ENDPOINT, JWT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY, TOTAL_LA
 
 import { taskInput } from "../../../types/types";
 import { authmiddleWare } from "../../../middleware/authMiddleware";
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { S3Client } from '@aws-sdk/client-s3'
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
+
 
 export const authRouter = Router();
 
@@ -26,19 +27,26 @@ authRouter.get("/presignedurl", authmiddleWare, async (req,res) =>{
     //@ts-ignore
     const userId = req.userId;
 
-    const command = new PutObjectCommand({
-        Bucket: "web3-saas",
-        Key: `/secret/${userId}/${Math.random()}/image.jpg`,
-        ContentType: "image/jpg"
+   
+    const { url, fields } = await createPresignedPost(s3Client, {
+        Bucket: 'web3-saas-bucket',
+        Key: `/keys/${userId}/${Math.random()}/image.jpg`,
+        Conditions: [
+            ['content-length-range', 0, 5 * 1024 * 1024] 
+        ],
+        Fields: {
+            'Content-Type': 'image/png'
+        },
+        Expires: 3600
     })
 
-    const preSignedUrl = await getSignedUrl(s3Client, command, {
-        expiresIn: 3600
-    })
+    console.log({ url, fields })
 
     res.json({
-        url: preSignedUrl
+        preSignedUrl: url,
+        fields
     })
+    
 })
 
 authRouter.post("/signin", async (req, res) =>{
