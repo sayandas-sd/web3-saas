@@ -1,12 +1,13 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../../db/db";
-import { CLOUDFLARE_BUCKET, CLOUDFLARE_ENDPOINT, JWT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
+import { CLOUDFLARE_BUCKET,CLOUDFLARE_ENDPOINT, JWT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
 
 import { taskInput } from "../../../types/types";
 import { authmiddleWare } from "../../../middleware/authMiddleware";
-import { S3Client } from '@aws-sdk/client-s3'
-import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 
 export const authRouter = Router();
@@ -22,28 +23,34 @@ const s3Client = new S3Client({
   },
 });
 
-authRouter.get("/presignedurl", async (req,res) =>{
+authRouter.get("/presignedurl", async (req,res) => {
 
-    const { url, fields } = await createPresignedPost(s3Client, {
-        Bucket: CLOUDFLARE_BUCKET,
+    try {
+
+        const fileKey = `keys/${crypto.randomUUID()}/image.png`;
+
+        const command = new PutObjectCommand({
+        Bucket: CLOUDFLARE_BUCKET, 
         Key: `keys/${crypto.randomUUID()}/image.png`,
-        Conditions: [
-            ['content-length-range', 0, 5 * 1024 * 1024],
-            ['eq', '$Content-Type', 'image/png'],
-        ],
-        Fields: {
-            'Content-Type': 'image/png'
-        },
-        Expires: 3600
-    })
+        ContentType: 'image/png', 
+        });
 
-    console.log({ url, fields })
+        const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 
-    res.json({
-        preSignedUrl: url,
-        fields
-    })
+        console.log({ url })
+
+        res.json({
+            preSignedUrl: url,
+            key: fileKey
+        })
     
+
+    } catch(e) {
+        res.status(500).json({
+            error: "'Failed to generate presigned URL'"
+        })
+    }
+
 })
 
 authRouter.post("/signin", async (req, res) =>{
