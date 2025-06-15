@@ -1,7 +1,7 @@
-import {Router} from "express";
+import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../../db/db";
-import { CLOUDFLARE_ENDPOINT, JWT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
+import { CLOUDFLARE_BUCKET, CLOUDFLARE_ENDPOINT, JWT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
 
 import { taskInput } from "../../../types/types";
 import { authmiddleWare } from "../../../middleware/authMiddleware";
@@ -22,17 +22,14 @@ const s3Client = new S3Client({
   },
 });
 
-authRouter.get("/presignedurl", authmiddleWare, async (req,res) =>{
+authRouter.get("/presignedurl", async (req,res) =>{
 
-    //@ts-ignore
-    const userId = req.userId;
-
-   
     const { url, fields } = await createPresignedPost(s3Client, {
-        Bucket: 'web3-saas-bucket',
-        Key: `/keys/${userId}/${Math.random()}/image.jpg`,
+        Bucket: CLOUDFLARE_BUCKET,
+        Key: `keys/${crypto.randomUUID()}/image.png`,
         Conditions: [
-            ['content-length-range', 0, 5 * 1024 * 1024] 
+            ['content-length-range', 0, 5 * 1024 * 1024],
+            ['eq', '$Content-Type', 'image/png'],
         ],
         Fields: {
             'Content-Type': 'image/png'
