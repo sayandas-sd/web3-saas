@@ -23,7 +23,7 @@ const s3Client = new S3Client({
   },
 });
 
-authRouter.get("/presignedurl", async (req,res) => {
+authRouter.get("/presignedurl", authmiddleWare, async (req,res) => {
 
     try {
 
