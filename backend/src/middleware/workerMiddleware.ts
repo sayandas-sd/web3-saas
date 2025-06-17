@@ -8,17 +8,16 @@ export function workermiddleWare(req: Request, res: Response, next: NextFunction
     const authHeader = req.headers.authorization;
 
 
-    if(!authHeader || !authHeader.startsWith('Bearer ')) {
+    if(!authHeader) {
         res.status(401).json({
             message: "Unauthorized"
         })
         return;
     }
 
-    const token = authHeader.split(' ')[1];
 
     try{
-        const decoded = jwt.verify(token, WORKER_JWT_SECRET)  as { userId: number };
+        const decoded = jwt.verify(authHeader, WORKER_JWT_SECRET)  as { userId: number };
       
 
         //@ts-ignore

@@ -23,15 +23,15 @@ const s3Client = new S3Client({
   },
 });
 
-authRouter.get("/presignedurl", authmiddleWare, async (req,res) => {
+authRouter.get("/presignedurl", async (req,res) => {
 
     try {
 
-        const fileKey = `keys/${crypto.randomUUID()}/image.png`;
+        const key = `keys/${crypto.randomUUID()}/image.png`;
 
         const command = new PutObjectCommand({
         Bucket: CLOUDFLARE_BUCKET, 
-        Key: `keys/${crypto.randomUUID()}/image.png`,
+        Key: key,
         ContentType: 'image/png', 
         });
 
@@ -41,7 +41,7 @@ authRouter.get("/presignedurl", authmiddleWare, async (req,res) => {
 
         res.json({
             preSignedUrl: url,
-            key: fileKey
+            key
         })
     
 
