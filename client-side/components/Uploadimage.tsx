@@ -1,7 +1,5 @@
 "use client";
 
-
-
 import { BACKEND_URL, CDN } from "@/lib/api";
 import axios from "axios";
 import { useState } from "react";
@@ -18,7 +16,13 @@ export function Uploadimage({onImageAdd, image}: ImageType) {
     async function fileSelect(e:any) {
         setUpload(true);
         const file = e.target.files[0];
-        const response = await axios.get(`${BACKEND_URL}/user/presignedurl`);
+
+        const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1MDI2MDExNH0.lwEeGtDPhxMPuwN-Mdt6EuMWzwtWsi2w8kqf8C8QP-Q";
+        const response = await axios.get(`${BACKEND_URL}/user/presignedurl`,{
+            headers: {
+               "Authorization": token
+            }
+        });
 
         const preSignedUrl = response.data.preSignedUrl;
         const key = response.data.key;

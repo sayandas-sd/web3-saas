@@ -1,0 +1,64 @@
+"use client";
+
+import { BACKEND_URL } from "@/lib/api";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+
+async function getAllTask(taskId: string) {
+  const token =
+    localStorage.getItem("token") ||
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1MDI2MDExNH0.lwEeGtDPhxMPuwN-Mdt6EuMWzwtWsi2w8kqf8C8QP-Q";
+
+  const response = await axios.get(`${BACKEND_URL}/user/task?taskId=${taskId}`, {
+      headers: {
+        Authorization: token,
+      },
+    }
+  );
+
+  return response.data;
+}
+
+export default function TaskPage() {
+  const params = useParams<{ taskId: string }>();
+  const taskId = params?.taskId;
+
+  const [result, setResult] = useState<
+    Record<string, { count: number; option: { imageUrl: string } }>
+  >({});
+  const [taskDetails, setTaskDetails] = useState<{ title?: string } | null>(null);
+
+  useEffect(() => {
+    if (!taskId) return;
+    getAllTask(taskId).then((data) => {
+     
+      setResult(data.result);
+      setTaskDetails(data.taskDetails);
+    });
+  }, [taskId]);
+
+  return (
+    <div>
+      <div className="text-2xl pt-20 flex justify-center">
+        {taskDetails?.title || "Loading..."}
+      </div>
+      <div className="flex justify-center pt-8">
+        {Object.keys(result || {}).map((key) => (
+          <Task key={key} imageUrl={result[key].option.imageUrl} votes={result[key].count} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Task({ imageUrl, votes }: { imageUrl: string; votes: number }) {
+   
+  return (
+    <div className="p-2">
+      <img className="p-2 w-96 rounded-md" src={imageUrl} alt="Task option" />
+      <div className="flex justify-center">{votes}</div>
+    </div>
+  );
+}
+

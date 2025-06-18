@@ -3,12 +3,35 @@
 import { useState } from "react";
 import { Uploadimage } from "./Uploadimage";
 import axios from "axios";
+import { BACKEND_URL } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 
 export const Upload = () => {
 
     const [images, setImages] = useState<string[]>([])
     const [title, setTitle] = useState("")
+    const router = useRouter()
+
+
+    async function submit() {
+        const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1MDI2MDExNH0.lwEeGtDPhxMPuwN-Mdt6EuMWzwtWsi2w8kqf8C8QP-Q";
+
+        const response = await axios.post(`${BACKEND_URL}/user/task`,{
+            options: images.map(image => ({
+                image_url: image
+            })),
+            title,
+            signature: "hardcoded_signature",
+            },{
+                headers: {
+                     "Authorization": token
+                }
+        })
+
+        router.push(`/task/${response.data.id}`)
+    }
+
 
     return <div className="flex justify-center">
         <div className="max-w-screen-lg w-full">
@@ -42,6 +65,12 @@ export const Upload = () => {
                 } } image={""} />
             </div>
 
+
+            <div className="flex justify-center">
+                <button onClick={submit} type="button" className="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+                    submit
+                </button>
+            </div>
            
         </div>
     </div>
