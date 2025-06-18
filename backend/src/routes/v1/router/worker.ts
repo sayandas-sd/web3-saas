@@ -198,7 +198,7 @@ workerRouter.post("/pay", workermiddleWare, async (req, res) => {
     const address = workerPay.address;
 
 
-    const signature = "ox9000";
+    const signature = "hardcoded_signature";
 
 
     await prisma.$transaction(async (tx) => {

@@ -23,7 +23,7 @@ const s3Client = new S3Client({
   },
 });
 
-authRouter.get("/presignedurl", async (req,res) => {
+authRouter.get("/presignedurl", authmiddleWare, async (req,res) => {
 
     try {
 
@@ -36,8 +36,6 @@ authRouter.get("/presignedurl", async (req,res) => {
         });
 
         const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-        console.log({ url })
 
         res.json({
             preSignedUrl: url,
@@ -115,12 +113,6 @@ authRouter.get("/task", authmiddleWare, async (req,res) => {
         return;
     }
 
-
-    console.log({
-        userId: user_Id,
-        taskId: task_Id
-    })
-
     const allTask = await prisma.task.findFirst({
         where: {
             userId: Number(user_Id),
@@ -149,31 +141,28 @@ authRouter.get("/task", authmiddleWare, async (req,res) => {
 
  
 
-    const values: Record<string, {
-        count: number,
+    const values: Record<string, { count: number; option: { imageUrl: string } }> = {};
+    
+    allTask.options.forEach((option, index) => {
+        values[`option${index + 1}`] = {
+        count: 0,
         option: {
-            imageUrl:  string
-        }
-    }> = {};
-
-    allTask.options.forEach(option => {
-        values[option.id] = {
-            count: 0,
-            option: {
-                imageUrl: option.image_url
-            }
-        }
-    })
+            imageUrl: option.image_url,
+        },
+        };
+    });
 
     
-    response.forEach(r => {
-            values[r.optionId].count++;
-        
-    })
+    response.forEach((r) => {
+        if (values[r.optionId]) {
+        values[r.optionId].count++;
+        }
+    });
 
     res.json({
-        values
-    })
+        result: values, 
+        taskDetails: { title: allTask.title }, 
+    });
 })
 
 
