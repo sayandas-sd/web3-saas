@@ -149,6 +149,10 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
 
 
                 
+            } else {
+                res.status(411).json({
+                    message: "incorrect inputs"
+                })
             }
 
     } catch(e) {
