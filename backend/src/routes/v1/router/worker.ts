@@ -107,7 +107,7 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
                         return;
                 }
 
-                const amount =  (Number(task.amount) / SUBMISSION);
+                const amount =  (Number(task.amount) / SUBMISSION).toString();;
 
               
 
@@ -129,7 +129,7 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
                        },
                        data: {
                             pendingAmount: {
-                                increment: Number(amount) * TOTAL_LAMPORTS_AMOUNT
+                                increment: Number(amount)
                             }
                        }
                     })
@@ -139,7 +139,7 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
 
                 
 
-                const nextTask = await getTask(userId);
+                const nextTask = await getTask(Number(userId));
 
                 res.status(200).json({
                     message: "successfully created",
@@ -152,6 +152,7 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
             }
 
     } catch(e) {
+          console.error("💥 Submission Error:", e);
         res.status(500).json({
             error: "server error"
         })

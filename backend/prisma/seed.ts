@@ -11,7 +11,7 @@ async function main() {
 
     const user2 = await prisma.user.create({
         data: {
-            address: "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkz"
+            address: "eyJ1c2VySWQiOjEsImlhdCI6MTc1MDMzMTYyNX0.Tf3dYWlkA4OG3NOGW5bfEJdY8GVoqyIIZnnNg0locCI"
         }
     })
 
