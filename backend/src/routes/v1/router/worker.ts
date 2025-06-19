@@ -107,7 +107,7 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
                         return;
                 }
 
-                const amount =  (Number(task.amount) / SUBMISSION).toString();;
+                const amount =  (Number(task.amount) / SUBMISSION).toString();
 
               
 

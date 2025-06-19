@@ -17,10 +17,10 @@ export function Uploadimage({onImageAdd, image}: ImageType) {
         setUpload(true);
         const file = e.target.files[0];
 
-        const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1MDI2MDExNH0.lwEeGtDPhxMPuwN-Mdt6EuMWzwtWsi2w8kqf8C8QP-Q";
+       
         const response = await axios.get(`${BACKEND_URL}/user/presignedurl`,{
             headers: {
-               "Authorization": token
+               "Authorization": localStorage.getItem("token")
             }
         });
 

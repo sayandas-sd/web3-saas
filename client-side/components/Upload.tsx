@@ -15,8 +15,6 @@ export const Upload = () => {
 
 
     async function submit() {
-        const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1MDI2MDExNH0.lwEeGtDPhxMPuwN-Mdt6EuMWzwtWsi2w8kqf8C8QP-Q";
-
         const response = await axios.post(`${BACKEND_URL}/user/task`,{
             options: images.map(image => ({
                 image_url: image
@@ -25,7 +23,7 @@ export const Upload = () => {
             signature: "hardcoded_signature",
             },{
                 headers: {
-                     "Authorization": token
+                     "Authorization": localStorage.getItem("token")
                 }
         })
 
