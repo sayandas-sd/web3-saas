@@ -64,7 +64,7 @@ authRouter.get("/presignedurl", authmiddleWare, async (req,res) => {
 authRouter.post("/signin", async (req, res) =>{
 
     try{
-        const pubAddress = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzc";
+        const pubAddress = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkz";
 
         const existingUser = await prisma.user.findFirst({
             where: {
@@ -167,10 +167,15 @@ authRouter.get("/task", authmiddleWare, async (req,res) => {
 
     
     response.forEach((r) => {
-        if (values[r.optionId]) {
-        values[r.optionId].count++;
-        }
-    });
+    const optionIndex = allTask.options.findIndex((opt) => opt.id === r.optionId);
+    if (optionIndex !== -1) {
+      const optionKey = `option${optionIndex + 1}`;
+      if (values[optionKey]) {
+        values[optionKey].count++;
+      }
+    }
+  });
+    console.log(values);
 
     res.json({
         result: values, 
