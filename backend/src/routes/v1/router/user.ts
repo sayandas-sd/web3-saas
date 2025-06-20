@@ -23,6 +23,16 @@ const s3Client = new S3Client({
   },
 });
 
+prisma.$transaction(
+    async (prisma) => {
+      // Code running in a transaction...
+    },
+    {
+      maxWait: 5000, // default: 2000
+      timeout: 10000, // default: 5000
+    }
+)
+
 authRouter.get("/presignedurl", authmiddleWare, async (req,res) => {
 
     try {
@@ -101,6 +111,9 @@ authRouter.post("/signin", async (req, res) =>{
 })
 
 
+
+
+
 authRouter.get("/task", authmiddleWare, async (req,res) => {
     //@ts-ignore
     const task_Id = req.query.taskId;
@@ -142,7 +155,7 @@ authRouter.get("/task", authmiddleWare, async (req,res) => {
  
 
     const values: Record<string, { count: number; option: { imageUrl: string } }> = {};
-    
+
     allTask.options.forEach((option, index) => {
         values[`option${index + 1}`] = {
         count: 0,
