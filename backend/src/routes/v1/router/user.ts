@@ -64,7 +64,7 @@ authRouter.get("/presignedurl", authmiddleWare, async (req,res) => {
 authRouter.post("/signin", async (req, res) =>{
 
     try{
-        const pubAddress = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkz";
+        const pubAddress = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4";
 
         const existingUser = await prisma.user.findFirst({
             where: {
@@ -175,7 +175,6 @@ authRouter.get("/task", authmiddleWare, async (req,res) => {
       }
     }
   });
-    console.log(values);
 
     res.json({
         result: values, 

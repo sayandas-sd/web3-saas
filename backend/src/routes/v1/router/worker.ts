@@ -140,7 +140,6 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
                 
 
                 const nextTask = await getTask(Number(userId));
-                console.log(nextTask)
 
                 res.status(200).json({
                     message: "successfully created",
