@@ -8,7 +8,8 @@ import { authmiddleWare } from "../../../middleware/authMiddleware";
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-
+import nacl from "tweetnacl";
+import { PublicKey } from "@solana/web3.js";
 
 export const authRouter = Router();
 
@@ -64,11 +65,26 @@ authRouter.get("/presignedurl", authmiddleWare, async (req,res) => {
 authRouter.post("/signin", async (req, res) =>{
 
     try{
-        const pubAddress = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4";
+        const { publicKey, signature } = req.body;
+        const message = new TextEncoder().encode("wants you to sign in with your Solana account")
+
+       
+        const result = nacl.sign.detached.verify(
+            message,
+            new Uint8Array(signature.data),
+            new PublicKey(publicKey).toBytes()
+        );
+
+        if (!result) {
+            res.status(411).json({
+                message: "Incorrect signature"
+            })
+            return;
+        }
 
         const existingUser = await prisma.user.findFirst({
             where: {
-                address: pubAddress
+                address: publicKey
             }
         })
 
@@ -86,7 +102,7 @@ authRouter.post("/signin", async (req, res) =>{
         } else {
             const user = await prisma.user.create({
                 data: {
-                    address: pubAddress
+                    address: publicKey
                 }
             })
 

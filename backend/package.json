@@ -19,6 +19,7 @@
     "@aws-sdk/s3-presigned-post": "^3.828.0",
     "@aws-sdk/s3-request-presigner": "^3.826.0",
     "@prisma/client": "^6.8.2",
+    "@solana/web3.js": "^1.98.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
@@ -26,6 +27,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.8.2",
+    "tweetnacl": "^1.0.3",
     "zod": "^3.25.56"
   },
   "devDependencies": {
