@@ -5,8 +5,6 @@ import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import {
     WalletModalProvider,
 } from '@solana/wallet-adapter-react-ui';
-import { clusterApiUrl } from '@solana/web3.js';
-
 import '@solana/wallet-adapter-react-ui/styles.css';
 
 export default function RootLayout({
@@ -17,7 +15,7 @@ export default function RootLayout({
 
     const network = WalletAdapterNetwork.Devnet;
 
-    const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+    const endpoint = "https://solana-devnet.g.alchemy.com/v2/kwGk0FPcMicyCq2bU43L2Cut0QN-AfpX";
 
     const wallets = useMemo(
         () => [],

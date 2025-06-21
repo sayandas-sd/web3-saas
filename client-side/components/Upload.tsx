@@ -1,26 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { Uploadimage } from "./Uploadimage";
 import axios from "axios";
 import { BACKEND_URL } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { Uploadimage } from "./Uploadimage";
 
 
 export const Upload = () => {
 
     const [images, setImages] = useState<string[]>([])
     const [title, setTitle] = useState("")
+    const { publicKey, sendTransaction } = useWallet();
+    const [txSignature, setTxSignature] = useState("");
+    const { connection } = useConnection();
     const router = useRouter()
 
 
     async function submit() {
         const response = await axios.post(`${BACKEND_URL}/user/task`,{
-            options: images.map(image => ({
-                image_url: image
-            })),
-            title,
-            signature: "hardcoded_signature",
+                options: images.map(image => ({
+                    image_url: image
+                })),
+                title,
+                signature: txSignature
             },{
                 headers: {
                      "Authorization": localStorage.getItem("token")
@@ -30,6 +35,35 @@ export const Upload = () => {
         router.push(`/task/${response.data.id}`)
     }
 
+
+    async function payment() {
+
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: publicKey!,
+                toPubkey: new PublicKey("HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZ"),
+                lamports: 0.1 * LAMPORTS_PER_SOL
+            })
+        );
+
+
+        const {
+            context: { slot: minContextSlot },
+            value: { blockhash, lastValidBlockHeight }
+        } = await connection.getLatestBlockhashAndContext();
+
+        const signature = await sendTransaction(transaction, connection, { minContextSlot });
+
+        await connection.confirmTransaction({
+            blockhash,
+            lastValidBlockHeight,
+            signature
+        });
+
+
+        setTxSignature(signature);
+
+    }
 
     return <div className="flex justify-center">
         <div className="max-w-screen-lg w-full">
@@ -48,7 +82,7 @@ export const Upload = () => {
 
             <div className="flex justify-center pt-4 max-w-screen-lg">
                 {images.map((image, index) => 
-                    <Uploadimage 
+                    <Uploadimage
                         key={index}
                         image={image} 
                         onImageAdd={(imageurl) => {
@@ -65,8 +99,8 @@ export const Upload = () => {
 
 
             <div className="flex justify-center">
-                <button onClick={submit} type="button" className="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
-                    submit
+                <button onClick={txSignature? submit : payment} type="button" className="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+                    {txSignature? "Submit" : "0.1 SOL"}
                 </button>
             </div>
            
