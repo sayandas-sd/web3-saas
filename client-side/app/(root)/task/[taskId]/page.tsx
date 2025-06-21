@@ -4,6 +4,7 @@ import { BACKEND_URL } from "@/lib/api";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { Appbar } from "@/components/Appbar";
 
 async function getAllTask(taskId: string) {
   
@@ -37,6 +38,7 @@ export default function TaskPage() {
 
   return (
     <div>
+      <Appbar />
       <div className="text-2xl pt-20 flex justify-center">
         {taskDetails?.title || "Loading..."}
       </div>
