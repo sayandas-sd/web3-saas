@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../../../db/db";
 import jwt from "jsonwebtoken";
-import { TOTAL_LAMPORTS_AMOUNT, WORKER_JWT_SECRET } from "../../../config/config";
+import { WORKER_JWT_SECRET } from "../../../config/config";
 
 import { getTask } from "../../../task";
 import { submissionInput } from "../../../types/types";

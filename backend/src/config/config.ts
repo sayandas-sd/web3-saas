@@ -15,3 +15,4 @@ export const CLOUDFLARE_ENDPOINT = requireEnvVar('CLOUDFLARE_ENDPOINT');
 export const S3_ACCESS_KEY = requireEnvVar('S3_ACCESS_KEY');
 export const S3_SECRET_KEY = requireEnvVar('S3_SECRET_KEY');
 export const CLOUDFLARE_BUCKET = requireEnvVar('CLOUDFLARE_BUCKET');
+export const RPC_URL = requireEnvVar('RPC_URL');

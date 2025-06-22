@@ -1,7 +1,7 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../../db/db";
-import { CLOUDFLARE_BUCKET,CLOUDFLARE_ENDPOINT, JWT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
+import { CLOUDFLARE_BUCKET,CLOUDFLARE_ENDPOINT, JWT_SECRET, RPC_URL, S3_ACCESS_KEY, S3_SECRET_KEY } from "../../../config/config";
 
 import { taskInput } from "../../../types/types";
 import { authmiddleWare } from "../../../middleware/authMiddleware";
@@ -9,11 +9,15 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import nacl from "tweetnacl";
-import { PublicKey } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 export const authRouter = Router();
 
 const DEFAULT_TITLE = "Choose the most voted one";
+
+const WALLET_ADDRESS = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZ";
+
+const connection = new Connection(RPC_URL)
 
 const s3Client = new S3Client({
   region: 'auto',
@@ -127,9 +131,6 @@ authRouter.post("/signin", async (req, res) =>{
 })
 
 
-
-
-
 authRouter.get("/task", authmiddleWare, async (req,res) => {
     //@ts-ignore
     const task_Id = req.query.taskId;
@@ -208,6 +209,12 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
 
     const parseData = taskInput.safeParse(body);
 
+    const user = await prisma.user.findFirst({
+        where: {
+            id: userId
+        }
+    })
+
     if(!parseData.success) {
         res.status(411).json({
             message: "you've sent the wrong inputs"
@@ -215,13 +222,42 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
         return;
     }
 
+    const transaction = await connection.getTransaction(parseData.data.signature, {
+        maxSupportedTransactionVersion: 1
+    });
+
+    console.log(transaction);
+
+    if ((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== 1000000000) {
+        res.status(411).json({
+            message: "Transaction signature/amount incorrect"
+        })
+        return;
+    }
+
+    if (transaction?.transaction.message.getAccountKeys().get(1)?.toString() !== WALLET_ADDRESS) {
+        res.status(411).json({
+            message: "Transaction sent to wrong address"
+        })
+        return;
+    }
+
+    if (transaction?.transaction.message.getAccountKeys().get(0)?.toString() !== user?.address) {
+        res.status(411).json({
+            message: "Transaction sent to wrong address"
+        })
+        return;
+    }
+
+
+
     let response = await prisma.$transaction(async (tx) => {
 
         const response = await tx.task.create({
             data: {
                 title:  parseData.data.title ?? DEFAULT_TITLE,
                 signature: parseData.data.signature,
-                amount: 1 * TOTAL_LAMPORTS_AMOUNT,
+                amount: 0.1 * LAMPORTS_PER_SOL,
                 userId: userId
             }
         })
