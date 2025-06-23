@@ -25,7 +25,7 @@ export default function NextTask() {
         setLoading(true)
         axios.get(`${BACKEND_URL}/worker/task`, {
             headers: {
-                "Authorization": localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1MDMzNTUzN30.l-StPL6DS5qtlqrzNILLJIRY0c78myziDmRcFkTHgh0"
+                "Authorization": localStorage.getItem("token")
             }
         })
         .then(res => {
@@ -34,6 +34,7 @@ export default function NextTask() {
         })
         .catch(e => {
             setLoading(false)
+            setCurrentTask(null)
         })
     }, [])
 
@@ -55,13 +56,13 @@ export default function NextTask() {
 
     return <div>
         <div className="text-2xl pt-20 flex justify-center">
-            {currentTask.title}
+           {currentTask.id}. {currentTask.title}
             <div className="pl-4">
                 {submission && "Submitting..."}
             </div>
         </div>
         
-        <div>
+        <div className="flex justify-center pt-8">
             {currentTask.options.map((option) => 
                 <Option onSelect={async () => {
 
