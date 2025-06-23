@@ -5,26 +5,36 @@ import {
     WalletDisconnectButton,
     WalletMultiButton
 } from '@solana/wallet-adapter-react-ui';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '@/lib/api';
 
 export function Appbar() {
 
     const { publicKey, signMessage } = useWallet();
+    const [hydration, setHydration] = useState(false);
 
-    async function SignMessage() {
+    useEffect(() => {    
+        setHydration(true);
+    }, []);
+
+    async function SignMessageAndSend() {
 
             if (!publicKey) {
                 return;
             }
+
+            if(!signMessage) {
+                return;
+            }
+            
             
             const message = new TextEncoder().encode("wants you to sign in with your Solana account")
     
-            const signature = await signMessage?.(message);
+            const signature = await signMessage(message);
 
-            console.log(publicKey)
-            console.log(signMessage)
+            console.log("PublicKey:", publicKey.toString());
+            console.log("Signature:", signature);
 
             const response = await axios.post(`${BACKEND_URL}/user/signin`, {
                 signature,
@@ -33,13 +43,13 @@ export function Appbar() {
 
             localStorage.setItem("token", response.data.token)
 
-           
-
     }
 
     useEffect(() => {
-        SignMessage()
+        SignMessageAndSend()
     }, [publicKey])
+
+    if (!hydration) return null;
 
     return <div className="flex justify-between border-b border-gray-200 pb-2 pt-2">
         <Link href="/">
