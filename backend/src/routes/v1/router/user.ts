@@ -1,7 +1,7 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../../db/db";
-import { CLOUDFLARE_BUCKET,CLOUDFLARE_ENDPOINT, JWT_SECRET, RPC_URL, S3_ACCESS_KEY, S3_SECRET_KEY } from "../../../config/config";
+import { CLOUDFLARE_BUCKET,CLOUDFLARE_ENDPOINT, JWT_SECRET, RPC_URL, S3_ACCESS_KEY, S3_SECRET_KEY, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
 
 import { taskInput } from "../../../types/types";
 import { authmiddleWare } from "../../../middleware/authMiddleware";
@@ -72,12 +72,18 @@ authRouter.post("/signin", async (req, res) =>{
         const { publicKey, signature } = req.body;
         const message = new TextEncoder().encode("wants you to sign in with your Solana account")
 
+        console.log(publicKey);
+        console.log(new Uint8Array(signature.data));
+
        
         const result = nacl.sign.detached.verify(
             message,
             new Uint8Array(signature.data),
             new PublicKey(publicKey).toBytes()
         );
+        
+        console.log(result);
+
 
         if (!result) {
             res.status(411).json({
@@ -228,7 +234,7 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
 
     console.log(transaction);
 
-    if ((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== 1000000000) {
+    if ((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== LAMPORTS_PER_SOL) {
         res.status(411).json({
             message: "Transaction signature/amount incorrect"
         })
@@ -257,7 +263,7 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
             data: {
                 title:  parseData.data.title ?? DEFAULT_TITLE,
                 signature: parseData.data.signature,
-                amount: 0.1 * LAMPORTS_PER_SOL,
+                amount: 0.1 * TOTAL_LAMPORTS_AMOUNT,
                 userId: userId
             }
         })

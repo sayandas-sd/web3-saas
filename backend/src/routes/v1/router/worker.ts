@@ -1,13 +1,17 @@
 import { Router } from "express";
 import { prisma } from "../../../db/db";
 import jwt from "jsonwebtoken";
-import { WORKER_JWT_SECRET } from "../../../config/config";
+import { PRIVATE_KEY, RPC_URL, TOTAL_LAMPORTS_AMOUNT, WORKER_JWT_SECRET } from "../../../config/config";
 
 import { getTask } from "../../../task";
 import { submissionInput } from "../../../types/types";
 import { workermiddleWare } from "../../../middleware/workerMiddleware";
+import nacl from "tweetnacl";
 
+import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
+import bs58 from "bs58";
 
+const connection = new Connection(RPC_URL);
 
 export const workerRouter = Router();
 
@@ -17,11 +21,28 @@ const SUBMISSION = 100;
 workerRouter.post("/signin", async(req, res)=>{
     
     try {
-         const pubKey = "nknka";
+
+        
+        const { publicKey, signature } = req.body;
+        const message = new TextEncoder().encode("wants you to sign in with your Solana account as a worker")
+
+        const result =  nacl.sign.detached.verify(
+            message,
+            new Uint8Array(signature.data),
+            new PublicKey(publicKey).toBytes()
+        );
+
+        if(!result) {
+            res.status(411).json({
+                message: "Incorrect signature"
+            })
+            return;
+        }
+        
 
         const existingUser = await prisma.worker.findFirst({
             where: {
-                address: pubKey
+                address: publicKey
             }
         })
 
@@ -31,14 +52,15 @@ workerRouter.post("/signin", async(req, res)=>{
             }, WORKER_JWT_SECRET);
 
             res.status(200).json({
-                token
+                token,
+                amount: existingUser.pendingAmount / TOTAL_LAMPORTS_AMOUNT
             })
             return;
 
         } else {
             const user = await prisma.worker.create({
                 data: {
-                    address: pubKey,
+                    address: publicKey,
                     pendingAmount: 0,
                     lockedAmount: 0
                 }
@@ -49,7 +71,8 @@ workerRouter.post("/signin", async(req, res)=>{
             }, WORKER_JWT_SECRET)
 
             res.status(200).json({
-                token
+                token,
+                amount: 0
             })
             return;
         }
@@ -111,7 +134,7 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
 
               
 
-                const submission = await prisma.$transaction(async (tx) => {
+                await prisma.$transaction(async (tx) => {
 
                     const submission = await tx.submission.create({
                         data: {
@@ -200,10 +223,39 @@ workerRouter.post("/pay", workermiddleWare, async (req, res) => {
         return;
     }
 
-    const address = workerPay.address;
+     const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: new PublicKey("HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZ"),
+                toPubkey:  new PublicKey(workerPay.address),
+                lamports: 1000_000_000 * workerPay.pendingAmount / TOTAL_LAMPORTS_AMOUNT,
+            })
+    );
 
 
-    const signature = "hardcoded_signature";
+    console.log("address:", workerPay.address)
+
+    const keypair = Keypair.fromSecretKey(bs58.decode(PRIVATE_KEY));
+
+    console.log("keypair", keypair)
+    
+
+    let signature = "";
+    try {
+        signature = await sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [keypair],
+        );
+    
+     } catch(e) {
+        res.json({
+            message: "Transaction failed"
+        })
+        return;
+     }
+    
+    console.log("workersignature", signature)
+
 
 
     await prisma.$transaction(async (tx) => {
@@ -223,7 +275,7 @@ workerRouter.post("/pay", workermiddleWare, async (req, res) => {
         })
 
 
-        const payout = await tx.pay.create({
+        await tx.pay.create({
             data: {
                 userId: Number(userId),
                 signature,
