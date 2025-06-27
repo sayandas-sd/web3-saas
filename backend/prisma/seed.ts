@@ -5,20 +5,20 @@ const prisma = new PrismaClient();
 async function main() {
     const user1 = await prisma.user.create({
         data:  {
-            address: "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzc"
+            address: "URkRK2BH29cz6i54zsW9D8FPoumx2bKFPfpuS6umez8"
         }
     })
 
     const user2 = await prisma.user.create({
         data: {
-            address: "eyJ1c2VySWQiOjEsImlhdCI6MTc1MDMzMTYyNX0.Tf3dYWlkA4OG3NOGW5bfEJdY8GVoqyIIZnnNg0locCI"
+            address: "URkRK2BH29cz6i54zsW9D8FPoumx2bKFPfpuS6umez8"
         }
     })
 
 
     const worker1 = await prisma.worker.create({
         data: {
-            address: "nknka",
+            address: "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZ",
             pendingAmount: 0,
             lockedAmount: 0
         }
@@ -26,7 +26,7 @@ async function main() {
 
     const worker2 = await prisma.worker.create({
         data: {
-            address: "sasnaks",
+            address: "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZnm",
             pendingAmount: 0,
             lockedAmount: 0
         }
@@ -34,17 +34,17 @@ async function main() {
 
     const task1 = await prisma.task.create({
         data: {
-            title: "which is most voted one",
+            title: "which is dog",
             signature: "sasasas",
             amount: 10,
             userId: user1.id,
             options: {
                 create: [
                     {
-                        image_url: "asas",
+                        image_url: "https://i.guim.co.uk/img/media/327aa3f0c3b8e40ab03b4ae80319064e401c6fbc/377_133_3542_2834/master/3542.jpg?width=1200&height=1200&quality=85&auto=format&fit=crop&s=34d32522f47e4a67286f9894fc81c863",
                     },
                     {
-                        image_url: "s",
+                        image_url: "https://www.dogstrust.org.uk/images/800x600/assets/2025-03/toffee%202.jpg",
                     }
                 ]
             },
@@ -56,17 +56,17 @@ async function main() {
 
     const task2 = await prisma.task.create({
         data: {
-            title: 'whics is dog',
+            title: 'which is cat',
             signature: 'newew',
             amount: 20,
             userId: user2.id,
             options: {
                 create: [
                     { 
-                        image_url: 'https://new.com', 
+                        image_url: 'https://i.guim.co.uk/img/media/327aa3f0c3b8e40ab03b4ae80319064e401c6fbc/377_133_3542_2834/master/3542.jpg?width=1200&height=1200&quality=85&auto=format&fit=crop&s=34d32522f47e4a67286f9894fc81c863', 
                     },
                     { 
-                        image_url: 'https://lol.com', 
+                        image_url: "https://www.dogstrust.org.uk/images/800x600/assets/2025-03/toffee%202.jpg", 
                     },
                 ],
             },
