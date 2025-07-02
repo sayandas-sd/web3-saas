@@ -9,7 +9,7 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import nacl from "tweetnacl";
-import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, PublicKey, SystemInstruction, SystemProgram } from "@solana/web3.js";
 
 export const authRouter = Router();
 
@@ -19,6 +19,7 @@ const WALLET_ADDRESS = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZ";
 
 const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 
+const TRANSFER_AMOUNT = 0.1 * LAMPORTS_PER_SOL;
 
 
 const s3Client = new S3Client({
@@ -217,13 +218,6 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
 
     const parseData = taskInput.safeParse(body);
 
-
-    const user = await prisma.user.findFirst({
-        where: {
-            id: userId
-        }
-    })
-
     if(!parseData.success) {
         res.status(411).json({
             message: "you've sent the wrong inputs"
@@ -231,30 +225,87 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
         return;
     }
 
+    const user = await prisma.user.findFirst({
+        where: {
+            id: userId
+        }
+    })
+
+    if (!user) {
+        res.status(404).json({ 
+            message: "User not found" 
+        });
+      return;
+    }
+
+
     const transaction = await connection.getTransaction(parseData.data.signature, {
         maxSupportedTransactionVersion: 1
     });
 
-    console.log("transaction: ", transaction);
 
-    if ((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== LAMPORTS_PER_SOL) {
-        res.status(411).json({
-            message: "Transaction signature/amount incorrect"
-        })
+    if (!transaction || !transaction.meta) {
+        res.status(404).json({ 
+            message: "Transaction not found" 
+        });
         return;
     }
 
-    if (transaction?.transaction.message.getAccountKeys().get(1)?.toString() !== WALLET_ADDRESS) {
+
+    const message = transaction.transaction.message;
+    const accountKeys = message.getAccountKeys();
+
+   
+    const transferInstruction = message.compiledInstructions.find((ix) => {
+        const programId = accountKeys.staticAccountKeys[ix.programIdIndex];
+        return programId.toBase58() === SystemProgram.programId.toBase58();
+    });
+
+    if (!transferInstruction) {
         res.status(411).json({
-            message: "Transaction sent to wrong address"
-        })
+            message: "No SOL transfer instruction found",
+        });
         return;
     }
 
-    if (transaction?.transaction.message.getAccountKeys().get(0)?.toString() !== user?.address) {
+    // Convert Pubkey -> AccountMeta :-)
+
+    const accountMetas = accountKeys.staticAccountKeys.map((key) => ({
+        pubkey: key,
+        isSigner: false,   
+        isWritable: true, 
+    }));
+
+    
+    const decodedTransfer = SystemInstruction.decodeTransfer({
+        programId: SystemProgram.programId,
+        keys: accountMetas,      
+        data: Buffer.from(transferInstruction.data),
+    });
+
+    // check receiver
+    if (decodedTransfer.toPubkey.toBase58() !== WALLET_ADDRESS) {
         res.status(411).json({
-            message: "Transaction sent to wrong address"
-        })
+             message: "Transaction sent to wrong address" 
+        });
+        return;
+    }
+
+
+
+    if (decodedTransfer.lamports !== BigInt(TRANSFER_AMOUNT)) {
+        res.status(411).json({
+            message: "Transaction amount incorrect",
+        });
+        return;
+    }
+
+
+    // check sender
+    if (decodedTransfer.fromPubkey.toBase58() !== user.address) {
+        res.status(411).json({ 
+            message: "Transaction sent from wrong address" 
+        });
         return;
     }
 
@@ -266,7 +317,7 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
             data: {
                 title:  parseData.data.title ?? DEFAULT_TITLE,
                 signature: parseData.data.signature,
-                amount: 0.1 * LAMPORTS_PER_SOL,
+                amount: TRANSFER_AMOUNT,
                 userId: userId
             }
         })
