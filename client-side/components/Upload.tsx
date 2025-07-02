@@ -42,7 +42,7 @@ export const Upload = () => {
             SystemProgram.transfer({
                 fromPubkey: publicKey!,
                 toPubkey: new PublicKey("HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZ"),
-                lamports: 100000000,
+                lamports: 0.1 * LAMPORTS_PER_SOL
             })
         );
 

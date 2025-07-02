@@ -15,7 +15,7 @@ export default function RootLayout({
 
     const network = WalletAdapterNetwork.Devnet;
 
-    const endpoint = "https://solana-devnet.g.alchemy.com/v2/kwGk0FPcMicyCq2bU43L2Cut0QN-AfpX"
+    const endpoint = "https://api.devnet.solana.com";
 
     const wallets = useMemo(
         () => [],
