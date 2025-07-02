@@ -1,7 +1,7 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../../db/db";
-import { CLOUDFLARE_BUCKET,CLOUDFLARE_ENDPOINT, JWT_SECRET, RPC_URL, S3_ACCESS_KEY, S3_SECRET_KEY, TOTAL_LAMPORTS_AMOUNT } from "../../../config/config";
+import { CLOUDFLARE_BUCKET,CLOUDFLARE_ENDPOINT, JWT_SECRET, RPC_URL, S3_ACCESS_KEY, S3_SECRET_KEY } from "../../../config/config";
 
 import { taskInput } from "../../../types/types";
 import { authmiddleWare } from "../../../middleware/authMiddleware";
@@ -17,7 +17,9 @@ const DEFAULT_TITLE = "Choose the most voted one";
 
 const WALLET_ADDRESS = "HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZ";
 
-const connection = new Connection(RPC_URL)
+const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+
+
 
 const s3Client = new S3Client({
   region: 'auto',
@@ -72,8 +74,8 @@ authRouter.post("/signin", async (req, res) =>{
         const { publicKey, signature } = req.body;
         const message = new TextEncoder().encode("wants you to sign in with your Solana account")
 
-        console.log(publicKey);
-        console.log(new Uint8Array(signature.data));
+        console.log("pubkey: ", publicKey);
+        console.log("keypair: ", new Uint8Array(signature.data));
 
        
         const result = nacl.sign.detached.verify(
@@ -82,7 +84,7 @@ authRouter.post("/signin", async (req, res) =>{
             new PublicKey(publicKey).toBytes()
         );
         
-        console.log(result);
+        console.log("result: ", result);
 
 
         if (!result) {
@@ -215,6 +217,7 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
 
     const parseData = taskInput.safeParse(body);
 
+
     const user = await prisma.user.findFirst({
         where: {
             id: userId
@@ -232,7 +235,7 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
         maxSupportedTransactionVersion: 1
     });
 
-    console.log(transaction);
+    console.log("transaction: ", transaction);
 
     if ((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== LAMPORTS_PER_SOL) {
         res.status(411).json({
@@ -263,7 +266,7 @@ authRouter.post("/task", authmiddleWare, async (req, res) =>{
             data: {
                 title:  parseData.data.title ?? DEFAULT_TITLE,
                 signature: parseData.data.signature,
-                amount: 0.1 * TOTAL_LAMPORTS_AMOUNT,
+                amount: 0.1 * LAMPORTS_PER_SOL,
                 userId: userId
             }
         })
