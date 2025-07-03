@@ -10,5 +10,3 @@ export const CLOUDFLARE_BUCKET = process.env.CLOUDFLARE_BUCKET || "";
 export const RPC_URL = process.env.RPC_URL || ""; 
 export const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 
-
-export const TOTAL_LAMPORTS_AMOUNT = 1_000_000; 

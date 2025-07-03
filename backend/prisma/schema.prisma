@@ -17,7 +17,7 @@ model User {
   id        Int       @id @default(autoincrement())
   address   String    @unique
   task      Task[]
-  pay       Pay[]
+
 }
 
 model Task {
@@ -43,6 +43,7 @@ model Option {
 model Worker {
   id              Int       @id @default(autoincrement())
   address         String    @unique 
+  pay             Pay[]
   submission      Submission[]
   pendingAmount   Int
   lockedAmount    Int
@@ -63,8 +64,8 @@ model Submission {
 
 model Pay {
   id          Int     @id @default(autoincrement())
-  userId      Int
-  user        User    @relation(fields: [userId], references: [id])
+  workerId    Int
+  worker      Worker    @relation(fields: [workerId], references: [id])
   amount      Int
   signature   String
   status      PaymentStatus

@@ -85,7 +85,6 @@ authRouter.post("/signin", async (req, res) =>{
             new PublicKey(publicKey).toBytes()
         );
         
-        console.log("result: ", result);
 
 
         if (!result) {

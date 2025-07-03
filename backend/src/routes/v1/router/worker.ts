@@ -1,17 +1,17 @@
 import { Router } from "express";
 import { prisma } from "../../../db/db";
 import jwt from "jsonwebtoken";
-import { PRIVATE_KEY, RPC_URL, TOTAL_LAMPORTS_AMOUNT, WORKER_JWT_SECRET } from "../../../config/config";
+import { PRIVATE_KEY, WORKER_JWT_SECRET } from "../../../config/config";
 
 import { getTask } from "../../../task";
 import { submissionInput } from "../../../types/types";
 import { workermiddleWare } from "../../../middleware/workerMiddleware";
 import nacl from "tweetnacl";
 
-import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
 
-const connection = new Connection(RPC_URL);
+const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 
 export const workerRouter = Router();
 
@@ -53,7 +53,7 @@ workerRouter.post("/signin", async(req, res)=>{
 
             res.status(200).json({
                 token,
-                amount: existingUser.pendingAmount / TOTAL_LAMPORTS_AMOUNT
+                amount: existingUser.pendingAmount / LAMPORTS_PER_SOL
             })
             return;
 
@@ -179,7 +179,6 @@ workerRouter.post("/submission", workermiddleWare, async(req, res) => {
             }
 
     } catch(e) {
-          console.error("💥 Submission Error:", e);
         res.status(500).json({
             error: "server error"
         })
@@ -205,90 +204,102 @@ workerRouter.get("/balance", workermiddleWare, async(req, res) => {
     })
 })
 
-workerRouter.post("/pay", workermiddleWare, async (req, res) => {
+workerRouter.post("/withdraw", workermiddleWare, async (req, res) => {
 
-    //@ts-ignore
-    const userId = req.userId;
+        //@ts-ignore
+        const userId = req.userId;
 
-    const workerPay = await prisma.worker.findFirst({
-        where: {
-            id: Number(userId)
-        }
-    })
+    try{
 
-    if(!workerPay) {
-        res.status(403).json({
-            message: "user not found"
+         const workerPay = await prisma.worker.findFirst({
+            where: {
+                id: Number(userId)
+            }
         })
-        return;
-    }
 
-     const transaction = new Transaction().add(
+        if(!workerPay) {
+            res.status(403).json({
+                message: "user not found"
+            })
+            return;
+        }
+
+
+        if (workerPay.pendingAmount <= 0) {
+            res.status(400).json({ 
+                message: "No pending payment available" 
+            });
+            return;
+        }
+
+
+        const transaction = new Transaction().add(
             SystemProgram.transfer({
                 fromPubkey: new PublicKey("HtkgKvwwJdEwq3EpwwCtVcHqvZed1Davc1wCB4JQkzcZ"),
-                toPubkey:  new PublicKey(workerPay.address),
-                lamports: 1000_000_000 * workerPay.pendingAmount / TOTAL_LAMPORTS_AMOUNT,
+                toPubkey: new PublicKey(workerPay.address),
+                lamports: LAMPORTS_PER_SOL * workerPay.pendingAmount / LAMPORTS_PER_SOL,
             })
-    );
-
-
-    console.log("address:", workerPay.address)
-
-    const keypair = Keypair.fromSecretKey(bs58.decode(PRIVATE_KEY));
-
-    console.log("keypair", keypair)
-    
-
-    let signature = "";
-    try {
-        signature = await sendAndConfirmTransaction(
-            connection,
-            transaction,
-            [keypair],
         );
-    
-     } catch(e) {
-        res.json({
-            message: "Transaction failed"
-        })
-        return;
-     }
-    
-    console.log("workersignature", signature)
 
+        const keypair = Keypair.fromSecretKey(bs58.decode(PRIVATE_KEY));
+        
+        const signature = "";
 
+            try {
 
-    await prisma.$transaction(async (tx) => {
+                await sendAndConfirmTransaction(
+                    connection,
+                    transaction,
+                    [keypair] 
+                );
 
-        await tx.worker.update({
-            where: {
-                id: userId
-            },
-            data: {
-                pendingAmount: {
-                    decrement: workerPay.pendingAmount
-                }, 
-                lockedAmount: {
-                    increment: workerPay.pendingAmount
-                }
+            } catch(e) {
+                res.status(500).json({
+                    message: "Transaction failed"
+                })
+                return;
             }
+            
+
+            await prisma.$transaction(async (tx) => {
+
+                await tx.worker.update({
+                    where: {
+                        id: Number(userId)
+                    },
+                    data: {
+                        pendingAmount: {
+                            decrement: workerPay.pendingAmount
+                        }, 
+                        lockedAmount: {
+                            increment: workerPay.pendingAmount
+                        }
+                    }
+                })
+
+
+                await tx.pay.create({
+                    data: {
+                        workerId: workerPay.id,
+                        signature,
+                        status: "Processing",
+                        amount: workerPay.pendingAmount
+                    }
+                })
+
+            });
+
+            res.status(200).json({
+                message: "Successful",
+                amount: workerPay.pendingAmount / LAMPORTS_PER_SOL,
+                signature
+            })
+
+
+    } catch(e) {
+        res.status(500).json({
+            message: "Server Error"
         })
-
-
-        await tx.pay.create({
-            data: {
-                userId: Number(userId),
-                signature,
-                status: "Processing",
-                amount: workerPay.pendingAmount
-            }
-        })
-
-    })
-
-    res.status(200).json({
-        message: "Successful",
-        amount: workerPay.pendingAmount
-    })
+    }
 
 })
