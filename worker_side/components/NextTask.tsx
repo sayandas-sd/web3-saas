@@ -25,7 +25,8 @@ export default function NextTask() {
         setLoading(true)
         axios.get(`${BACKEND_URL}/worker/task`, {
             headers: {
-                "Authorization": localStorage.getItem("token")
+                "Authorization": localStorage.getItem("token"),
+                 "Content-Type": "application/json"
             }
         })
         .then(res => {
@@ -74,7 +75,8 @@ export default function NextTask() {
                                 selectId: option.id.toString()
                             }, {     
                                 headers: {
-                                    "Authorization": localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1MDMzNjI2N30.keOXqlftslLTmXKvTiiO_sqEKbV9h4vCiPIrn2E_JTg"
+                                    "Authorization": localStorage.getItem("token"),
+                                    "Content-Type": "application/json"
                                 }
                             });
 
