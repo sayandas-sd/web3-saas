@@ -33,9 +33,6 @@ export function Appbar() {
     
             const signature = await signMessage(message);
 
-            console.log("PublicKey:", publicKey.toString());
-            console.log("Signature:", signature);
-
             const response = await axios.post(`${BACKEND_URL}/user/signin`, {
                 signature,
                 publicKey: publicKey?.toString()

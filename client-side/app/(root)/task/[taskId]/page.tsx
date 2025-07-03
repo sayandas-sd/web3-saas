@@ -10,7 +10,8 @@ async function getAllTask(taskId: string) {
   
   const response = await axios.get(`${BACKEND_URL}/user/task?taskId=${taskId}`, {
       headers: {
-        Authorization: localStorage.getItem("token")
+        Authorization: localStorage.getItem("token"),
+        "Content-Type": "application/json"
       },
     }
   );
