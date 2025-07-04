@@ -19,7 +19,7 @@ export function Uploadimage({onImageAdd, image}: ImageType) {
         const file = e.target.files[0];
 
        
-        const response = await axios.get(`${BACKEND_URL}/user/presignedurl?contentType=${encodeURIComponent(file.type)}`,{
+        const response = await axios.get(`${BACKEND_URL}/user/presignedurl`,{
             headers: {
                "Authorization": localStorage.getItem("token")
             }
