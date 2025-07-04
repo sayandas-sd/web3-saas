@@ -43,8 +43,8 @@ export function Appbar() {
     }
 
     useEffect(() => {
-        SignMessageAndSend()
-    }, [publicKey])
+        SignMessageAndSend();
+    }, [publicKey, signMessage]);
 
     if (!hydration) return null;
 

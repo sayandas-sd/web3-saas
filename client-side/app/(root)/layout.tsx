@@ -1,7 +1,6 @@
 "use client";
 import React, { useMemo } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import {
     WalletModalProvider,
 } from '@solana/wallet-adapter-react-ui';
@@ -13,13 +12,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
 
-    const network = WalletAdapterNetwork.Devnet;
-
     const endpoint = "https://api.devnet.solana.com";
 
     const wallets = useMemo(
         () => [],
-        [network]
+        []
     );
 
    return (

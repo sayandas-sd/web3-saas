@@ -5,6 +5,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Appbar } from "@/components/Appbar";
+import Image from "next/image";
 
 async function getAllTask(taskId: string) {
   
@@ -16,7 +17,7 @@ async function getAllTask(taskId: string) {
     }
   );
 
-  return response.data;
+  return response.data;  
 }
 
 export default function TaskPage() {
@@ -56,7 +57,7 @@ function Task({ imageUrl, votes }: { imageUrl: string; votes: number }) {
    
   return (
     <div className="p-2">
-      <img className="p-2 w-96 rounded-md" src={imageUrl} alt="Task option" />
+      <Image className="p-2 w-96 rounded-md" src={imageUrl} alt="Task option" width={384} height={384}/>
       <div className="flex justify-center">{votes}</div>
     </div>
   );

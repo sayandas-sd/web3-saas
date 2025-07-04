@@ -3,7 +3,7 @@
 import { BACKEND_URL, CDN } from "@/lib/api";
 import axios from "axios";
 import { useState } from "react";
-
+import Image from "next/image";
 interface ImageType {
     onImageAdd: (image: string) => void;
     image: string;
@@ -13,7 +13,8 @@ export function Uploadimage({onImageAdd, image}: ImageType) {
 
     const [upload, setUpload] = useState(false);
 
-    async function fileSelect(e:any) {
+    async function fileSelect(e:React.ChangeEvent<HTMLInputElement>) {
+        if (!e.target.files || e.target.files.length === 0) return;
         setUpload(true);
         const file = e.target.files[0];
 
@@ -40,7 +41,7 @@ export function Uploadimage({onImageAdd, image}: ImageType) {
     }
 
     if (image) {
-        return <img className={"p-2 w-96 rounded"} src={image} />;
+        return <Image alt="Uploaded Image" className={"p-2 w-96 rounded"} src={image} width={384} height={384}/>;
     }
 
     return <div className="w-40 h-40 rounded border text-2xl cursor-pointer">
