@@ -6,6 +6,7 @@ import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapte
 import axios from "axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ToggleMode } from "./ToggleMode";
 
 export default function Appbar() {
 
@@ -61,8 +62,12 @@ export default function Appbar() {
                 LebeliFy
             </div>
         </Link>
-        <div className="text-xl pr-4 pb-2">
-            <button onClick={() => {
+        <div className="text-xl pr-4 pb-2 flex">
+            <div className=' flex flex-col justify-center items-center'>
+                <ToggleMode />
+            </div>
+            <div>
+                <button onClick={() => {
                 axios.post(`${BACKEND_URL}/worker/withdraw`, {
                     
                 }, {
@@ -75,6 +80,8 @@ export default function Appbar() {
                 Pay ({balance})
             </button>
             {publicKey ?  <WalletDisconnectButton /> :  <WalletMultiButton />}
+            </div>
+            
         </div>
     </div>
 }

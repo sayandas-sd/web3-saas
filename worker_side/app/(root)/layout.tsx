@@ -6,6 +6,7 @@ import {
     WalletModalProvider,
 } from '@solana/wallet-adapter-react-ui';
 import '@solana/wallet-adapter-react-ui/styles.css';
+import { ThemeProvider } from 'next-themes';
 
 export default function RootLayout({
   children,
@@ -26,7 +27,14 @@ export default function RootLayout({
     <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
             <WalletModalProvider>
-                {children}
+                 <ThemeProvider
+                      attribute="class"
+                      defaultTheme="system"
+                      enableSystem
+                      disableTransitionOnChange
+                  >
+                    {children}
+                 </ThemeProvider>
             </WalletModalProvider>
         </WalletProvider>
     </ConnectionProvider>
