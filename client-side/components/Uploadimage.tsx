@@ -27,11 +27,14 @@ export function Uploadimage({onImageAdd, image}: ImageType) {
 
         const preSignedUrl = response.data.preSignedUrl;
         const key = response.data.key;
+        console.log("pr-url is: " , preSignedUrl);
 
-        await axios.put(preSignedUrl, file, {
+        await fetch(preSignedUrl, {
+            method: "PUT",
             headers: {
                 "Content-Type": file.type
-            }
+            },
+            body: file
         });
         const r2BaseUrl = `${CDN}/web3-saas/`;
         const imageUrl = `${r2BaseUrl}${key}`; 

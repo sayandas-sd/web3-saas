@@ -8,6 +8,7 @@ import {
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BACKEND_URL } from '@/lib/api';
+import { ToggleMode } from './ToggleMode';
 
 export function Appbar() {
 
@@ -54,8 +55,14 @@ export function Appbar() {
                 LebeliFy
             </div>
         </Link>
-        <div className="text-xl pr-4 pb-2">
+        
+        <div className="text-xl pr-4 pb-2 flex">
+            <div className=' flex flex-col justify-center items-center'>
+                <ToggleMode />
+            </div>
+            <div className='ml-10'>
              {publicKey ? <WalletDisconnectButton /> : <WalletMultiButton /> }
+            </div>
         </div>
     </div>
 }
