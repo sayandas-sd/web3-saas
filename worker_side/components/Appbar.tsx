@@ -79,7 +79,7 @@ export default function Appbar() {
                     }
                 })
             }} className="cursor-pointer mr-5">
-                Pay ({balance})
+                Withdraw ({balance})
             </Button>
             {publicKey ?  <WalletDisconnectButton /> :  <WalletMultiButton />}
             </div>
