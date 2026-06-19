@@ -21,7 +21,7 @@ services:
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: postgres
     ports:
-      - "5450:5432"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
 

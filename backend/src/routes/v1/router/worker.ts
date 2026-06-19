@@ -26,9 +26,20 @@ workerRouter.post("/signin", async(req, res)=>{
         const { publicKey, signature } = req.body;
         const message = new TextEncoder().encode("wants you to sign in with your Solana account as a worker")
 
+        const signatureBytes =
+            Array.isArray(signature) ? new Uint8Array(signature) :
+            signature?.data && Array.isArray(signature.data) ? new Uint8Array(signature.data) :
+            signature?.buffer instanceof ArrayBuffer ? new Uint8Array(signature.buffer) :
+            undefined;
+
+        if (!signatureBytes) {
+            res.status(400).json({ message: "Invalid signature format" });
+            return;
+        }
+
         const result =  nacl.sign.detached.verify(
             message,
-            new Uint8Array(signature.data),
+            signatureBytes,
             new PublicKey(publicKey).toBytes()
         );
 
