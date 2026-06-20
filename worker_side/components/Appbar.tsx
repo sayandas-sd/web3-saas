@@ -33,14 +33,14 @@ export default function Appbar() {
         const message = new TextEncoder().encode("wants you to sign in with your Solana account as a worker");
 
         const signature = await signMessage(message);
-
+        const signatureBytes = Array.from(signature);
 
         console.log("publickey",publicKey)
-        console.log("signature",signature);
+        console.log("signature",signatureBytes);
 
 
         const response = await axios.post(`${BACKEND_URL}/worker/signin`, {
-            signature,
+            signature: signatureBytes,
             publicKey: publicKey?.toString()
         })
 
@@ -64,7 +64,7 @@ export default function Appbar() {
             </div>
         </Link>
         
-        <div className="text-xl pr-4 pb-2 flex">
+        <div className="text-xl pr-2 pb-2 flex">
             <div className='mr-5 flex flex-col justify-center items-center'>
                 <ToggleButton/>
             </div>
