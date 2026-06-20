@@ -33,9 +33,10 @@ export function Appbar() {
             const message = new TextEncoder().encode("wants you to sign in with your Solana account")
     
             const signature = await signMessage(message);
+            const signatureBytes = Array.from(signature);
 
             const response = await axios.post(`${BACKEND_URL}/user/signin`, {
-                signature,
+                signature: signatureBytes,
                 publicKey: publicKey?.toString()
             })
 
